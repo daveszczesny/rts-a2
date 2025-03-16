@@ -12,22 +12,24 @@
 #include <string.h>
 #include <limits.h>
 
-#define ITERATIONS 1000
-#define NS_PER_SEC 1000000000L
+#define ITERATIONS 10000 // number of iterations for benchmarking
+#define NS_PER_SEC 1000000000L // nanoseconds per second
 
+// global variables for signal handling and timing
 volatile sig_atomic_t signal_received = 0;
 struct timespec start, end, sleep_time;
 
 timer_t timer_id;
-volatile sig_atomic_t timer_expired = 0;
+volatile sig_atomic_t timer_expired = 0; // flag for timer expiration
 struct timespec start, end;
 
+// time signal handler to measure latency
 void timer_handler(int signum) {
     timer_expired = 1;
-    clock_gettime(CLOCK_MONOTONIC, &end);
+    clock_gettime(CLOCK_MONOTONIC, &end); // record end time
 }
 
-
+// function to benchmark timer jitter
 void benchmark_timer() {
     long long total_jitter = 0;
     long long max_jitter = 0;
@@ -84,12 +86,13 @@ void benchmark_timer() {
     timer_delete(timer_id);
 }
 
-
+// signal handler to measure latency
 void signal_handler(int signum) {
     signal_received = 1;
 	clock_gettime(CLOCK_MONOTONIC, &end);
 }
 
+// configure real-time scheduling for low-latency execution
 void configure_realtime_scheduling() {
     struct sched_param param;
     param.sched_priority = sched_get_priority_max(SCHED_FIFO);
@@ -106,6 +109,7 @@ void lock_memory() {
     }
 }
 
+// function to benchmark nanosleep jitter
 void benchmark_nanosleep() {
     // struct timespec start, end, sleep_time;
     long long total_jitter = 0;
@@ -140,6 +144,7 @@ void benchmark_nanosleep() {
     printf("Min jitter: %lld ns\n", min_jitter);
 }
 
+// function to benchmark signal latency
 void benchmark_signal_latency() {
     long long total_latency = 0;
     long long max_latency = 0;
@@ -172,6 +177,7 @@ void benchmark_signal_latency() {
     printf("Min latency: %lld ns\n", min_latency);
 }
 
+// function to benchmark usleep jitter
 void benchmark_usleep() {
     long long total_jitter = 0;
     long long max_jitter = 0;
@@ -209,6 +215,7 @@ int main() {
     benchmark_nanosleep();
     benchmark_signal_latency();
     benchmark_timer();
+    benchmark_usleep();
 
     return 0;
 }
